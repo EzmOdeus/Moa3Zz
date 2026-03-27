@@ -35,7 +35,7 @@ const swaggerDefinition = {
   },
   servers: [
     { 
-      url: 'http://localhost:4000/api',
+      url: 'https://moa3-zz.vercel.app/api',
       description: 'Local development server',
     },
   ],
