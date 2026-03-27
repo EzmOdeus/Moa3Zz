@@ -175,14 +175,20 @@ router.get('/admin/videos', (req, res) => {
   res.json({ data: store.getAllVideos() });
 });
 
-router.post('/videos', (req, res) => {
-  const { title, url, source } = req.body;
-  if (!url) {
-    return res.status(400).json({ error: 'url is required' });
-  }
-
-  const video = store.addVideo({ title, url, source });
-  res.status(201).json({ data: video });
+router.post('/videos', (req, res) => { 
+   const { title, url, source } = req.body; 
+   if (!url) { 
+     return res.status(400).json({ error: 'url is required' }); 
+   } 
+  
+   try {
+     const video = store.addVideo({ title, url, source }); 
+     console.log('Video added successfully'); // شوف لو هتطبع دي
+     res.status(201).json({ data: video });
+   } catch (error) {
+     console.error('Error in addVideo:', error); // شوف الخطأ الحقيقي
+     res.status(500).json({ error: error.message });
+   }
 });
 
 router.delete('/videos/:id', (req, res) => {
