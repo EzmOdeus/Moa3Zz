@@ -12,8 +12,8 @@ const PORT = process.env.PORT || 3000;
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: "Too many requests from this IP",
 });
 
@@ -39,33 +39,37 @@ app.get("/health", (req, res) => {
 // Error handling
 app.use(errorHandler);
 
-// Start server
-const startServer = async () => {
-  try {
-    await database.connect();
+// ✅ تصدير التطبيق للمنصات السحابية
+module.exports = app;
 
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
-      console.log(`📊 Health check: http://localhost:${PORT}/health`);
-      console.log(`🎥 Videos API: http://localhost:${PORT}/api/videos`);
-    });
-  } catch (error) {
-    console.error("Failed to start server:", error);
-    process.exit(1);
-  }
-};
+// ✅ تشغيل السيرفر محلياً فقط (عندما لا يكون في بيئة serverless)
+if (process.env.NODE_ENV !== 'production' || !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  const startServer = async () => {
+    try {
+      await database.connect();
+      app.listen(PORT, () => {
+        console.log(`🚀 Server running on http://localhost:${PORT}`);
+        console.log(`📊 Health check: http://localhost:${PORT}/health`);
+        console.log(`🎥 Videos API: http://localhost:${PORT}/api/videos`);
+      });
+    } catch (error) {
+      console.error("Failed to start server:", error);
+      process.exit(1);
+    }
+  };
 
-// Graceful shutdown
-process.on("SIGINT", async () => {
-  console.log("Shutting down gracefully...");
-  await database.disconnect();
-  process.exit(0);
-});
+  // Graceful shutdown
+  process.on("SIGINT", async () => {
+    console.log("Shutting down gracefully...");
+    await database.disconnect();
+    process.exit(0);
+  });
 
-process.on("SIGTERM", async () => {
-  console.log("Shutting down gracefully...");
-  await database.disconnect();
-  process.exit(0);
-});
+  process.on("SIGTERM", async () => {
+    console.log("Shutting down gracefully...");
+    await database.disconnect();
+    process.exit(0);
+  });
 
-startServer();
+  startServer();
+}
